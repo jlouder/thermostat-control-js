@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "AMD",
+        "allowJs": true,
+        "target": "ES5"
+    },
+    "include": [
+        "index.ts"
+    ]
+}
