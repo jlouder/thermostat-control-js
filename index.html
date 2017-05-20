@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <link rel="stylesheet" href="styles.css">
     <script data-main="index" src="require.js"></script>
   </head>
   <body>
@@ -63,9 +64,12 @@
       </div>
 
       <div class="mdl-layout__content">
+        <div id="busy" class="mdl-typography--text-center pages" hidden>
+          <div id="spinner" class="mdl-spinner mdl-js-spinner"></div>
+        </div>
+
         <div id="home" class="mdl-typography--text-center pages" hidden>
           <h1>This is the main page.</h1>
-          <div id="home-spinner" class="mdl-spinner mdl-js-spinner"></div>
         </div>
 
         <div id="schedule" class="mdl-typography--text-center pages" hidden>

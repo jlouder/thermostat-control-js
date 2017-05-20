@@ -154,13 +154,16 @@ function routePage() {
 
 function render_home() {
   console.log("render_home()");
-  let spinner: HTMLElement = document.getElementById('home-spinner');
+  let busyOverlay: HTMLElement = document.getElementById('busy');
+  busyOverlay.style.display = "block";
+  let spinner: HTMLElement = document.getElementById('spinner');
   spinner.classList.add('is-active');
   let state: ThermostatState;
   console.log("getting current thermostat state ...");
   thermostat.getCurrentState(function(currentState) {
     state = currentState;
     spinner.classList.remove('is-active');
+    busyOverlay.style.display = "none";
     console.log("Got the current state!");
     console.log(state);
   });
