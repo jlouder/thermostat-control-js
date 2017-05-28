@@ -71,6 +71,19 @@ class ThermostatState {
   public get thermostatState() : number {
     return this._thermostatState;
   }
+
+  public get thermostatStateAsText() : string {
+    switch (this._thermostatState) {
+      case ThermostatState.TSTATE_OFF:
+        return "Off";
+      case ThermostatState.TSTATE_HEAT:
+        return "Heating";
+      case ThermostatState.TSTATE_COOL:
+        return "Cooling";
+      default:
+        return "Unknown";
+    }
+  }
 }
 
 class Thermostat {
@@ -166,6 +179,15 @@ function render_home() {
     busyOverlay.style.display = "none";
     console.log("Got the current state!");
     console.log(state);
+
+    let currentTemp: HTMLElement = document.getElementById('temperature-current');
+    currentTemp.textContent = currentState.currentTemp;
+
+    let targetTemp: HTMLElement = document.getElementById('temperature-target');
+    targetTemp.textContent = currentState.targetTemp;
+
+    let heatingOrCooling: HTMLElement = document.getElementById('state-current');
+    heatingOrCooling.textContent = currentState.thermostatStateAsText;
   });
 
 }
