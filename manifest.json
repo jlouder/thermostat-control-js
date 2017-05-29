@@ -1,0 +1,13 @@
+{
+    "short_name": "Thermostat",
+    "name": "Thermostat control",
+    "icons": [
+        {
+            "src": "images/thermometer-96.png",
+            "type": "image/png",
+            "sizes": "96x96"
+        }
+    ],
+    "start_url": "index.html",
+    "display": "standalone"
+}

@@ -1,3 +1,5 @@
+/// <reference path="local_types.ts" />
+
 const KEY_URL: string = 'url';
 const KEY_USERNAME: string = 'username';
 const KEY_PASSWORD: string = 'password';
@@ -177,8 +179,6 @@ function render_home() {
     state = currentState;
     spinner.classList.remove('is-active');
     busyOverlay.style.display = "none";
-    console.log("Got the current state!");
-    console.log(state);
 
     let currentTemp: HTMLElement = document.getElementById('temperature-current');
     currentTemp.textContent = currentState.currentTemp;
@@ -233,6 +233,24 @@ applySettingsButton.addEventListener('click', function() {
     message: "Saved Settings"
   };
   (toast as any).MaterialSnackbar.showSnackbar(data);
+});
+
+let targetTemperatureButton : Element = document.getElementById('button-target-temperature');
+targetTemperatureButton.addEventListener('click', function() {
+  let targetTemperatureDialog : Element = document.getElementById('dialog-target-temperature');
+  (<HTMLDialogElement>targetTemperatureDialog).showModal();
+});
+
+let targetDialogOkButton : Element = document.getElementById('dialog-target-temperature-button-ok');
+targetDialogOkButton.addEventListener('click', function() {
+  let targetTemperatureDialog : Element = document.getElementById('dialog-target-temperature');
+  (<HTMLDialogElement>targetTemperatureDialog).close();
+});
+
+let targetDialogCancelButton : Element = document.getElementById('dialog-target-temperature-button-cancel');
+targetDialogCancelButton.addEventListener('click', function() {
+  let targetTemperatureDialog : Element = document.getElementById('dialog-target-temperature');
+  (<HTMLDialogElement>targetTemperatureDialog).close();
 });
 
 // Route every time the hash part of the URL changes

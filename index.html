@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
     <script data-main="index" src="require.js"></script>
   </head>
   <body>
@@ -70,7 +71,7 @@
 
         <div id="home" class="pages" hidden>
           <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--4-col">
+            <div class="mdl-cell mdl-cell--6-col mdl-cell--stretch">
               <div class="mdl-typography--text-center">
                 <div class="mdl-typography--display-4">
                   <span id="temperature-current">--.-</span>&deg;
@@ -81,14 +82,27 @@
               </div>
             </div>
 
-            <div class="mdl-cell mdl-cell--4-col mdl-typography--text-center mdl-typography--headline">
-              Target:
-              <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-                <span class="mdl-typography--headline">
-                  <span id="temperature-target">--</span>&deg;
-                </span>
-              </button>
+            <div class="mdl-cell mdl-cell--6-col">
+              <div class="mdl-grid">
+                <div class="mdl-cell mdl-cell--12-col mdl-typography--text-center mdl-typography--headline"
+                     id="button-target-temperature">
+                  Target:
+                  <button class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised mdl-js-ripple-effect">
+                    <span class="mdl-typography--headline">
+                      <span id="temperature-target">--</span>&deg;
+                    </span>
+                  </button>
+                </div>
+
+                <div class="mdl-cell mdl-cell--12-col mdl-typography--text-center mdl-typography--headline">
+                  <label for="switch-hold" class="mdl-switch mdl-js-switch" style="width: auto">
+                    <input type="checkbox" id="switch-hold" class="mdl-switch__input">
+                    <span class="mdl-switch__label">Hold</span>
+                  </label>
+                </div>
+              </div>
             </div>
+
           </div>
         </div>
 
@@ -173,5 +187,18 @@
       </div>
     </div>
     <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+    <dialog class="mdl-dialog" id="dialog-target-temperature">
+      <h2 class="mdl-dialog__title">Target Temperature</h2>
+      <div class="mdl-dialog__content">
+        <p>Set the new temperature here.</p>
+        <i class="material-icons">expand_less</i>
+        <i class="material-icons">expand_more</i>
+      </div>
+      <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button" id="dialog-target-temperature-button-ok">Ok</button>
+        <button type="button" class="mdl-button" id="dialog-target-temperature-button-cancel">Cancel</button>
+      </div>
+    </dialog>
   </body>
 </html>
