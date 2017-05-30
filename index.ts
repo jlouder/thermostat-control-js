@@ -3,6 +3,8 @@
 const KEY_URL: string = 'url';
 const KEY_USERNAME: string = 'username';
 const KEY_PASSWORD: string = 'password';
+const TARGET_TEMPERATURE_MAX: number = 85;
+const TARGET_TEMPERATURE_MIN: number = 60;
 
 class ThermostatState {
   private _currentTemp: number;
@@ -92,6 +94,7 @@ class Thermostat {
   private url: string;
   private username: string;
   private password: string;
+  private _state: ThermostatState;
 
   public constructor(url: string, username: string, password: string) {
     this.url = url;
@@ -99,21 +102,61 @@ class Thermostat {
     this.password = password;
   }
 
-  public getCurrentState(successCallback: (ThermostatState) => void) {
+  public refreshState(successCallback: (ThermostatState) => void) {
     let xhr: XMLHttpRequest = new XMLHttpRequest();
     xhr.open("GET", this.url, true);
     xhr.setRequestHeader('Authorization', 'Basic ' + btoa(this.username + ':' + this.password));
+    let thisThermostat : Thermostat = this;
     xhr.onreadystatechange = function() {
-      let data;
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          successCallback(new ThermostatState(JSON.parse(xhr.responseText)));
+          thisThermostat._state = new ThermostatState(JSON.parse(xhr.responseText));
+          successCallback(thisThermostat._state);
         } else {
           console.error("thermostat API call returned " + xhr.status);
         }
       }
     };
     xhr.send();
+  }
+
+  public get state(): ThermostatState {
+    if (this._state === null) {
+      this.refreshState(function(newState: ThermostatState) {
+        this._state = newState;
+      })
+    }
+    return this._state;
+  }
+
+  public setTargetTemp(newTargetTemp: number, callback: (boolean) => void) {
+    let heatOrCool: string = "t_cool";
+    if (this.state.thermostatMode == ThermostatState.TMODE_HEAT) {
+      heatOrCool = "t_heat";
+    }
+    let request = {};
+    request[heatOrCool] = newTargetTemp;
+    console.log("setting target temperature (" + heatOrCool + ") to: " + newTargetTemp);
+    let xhr: XMLHttpRequest = new XMLHttpRequest();
+    xhr.open("POST", this.url, true);
+    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(this.username + ':' + this.password));
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          let response = JSON.parse(xhr.responseText);
+          if ("success" in response) {
+            callback(true);
+          } else {
+            callback(false);
+          }
+        } else {
+          console.error("set target temp returned " + xhr.status);
+          callback(false);
+        }
+      }
+    };
+    xhr.send(JSON.stringify(request));
   }
 }
 
@@ -167,18 +210,27 @@ function routePage() {
   }
 }
 
-function render_home() {
-  console.log("render_home()");
+function setBusy(busy: boolean) {
   let busyOverlay: HTMLElement = document.getElementById('busy');
-  busyOverlay.style.display = "block";
   let spinner: HTMLElement = document.getElementById('spinner');
-  spinner.classList.add('is-active');
-  let state: ThermostatState;
-  console.log("getting current thermostat state ...");
-  thermostat.getCurrentState(function(currentState) {
-    state = currentState;
+
+  if (busy) {
+    busyOverlay.style.display = "block";
+    spinner.classList.add('is-active');  
+  } else {
     spinner.classList.remove('is-active');
     busyOverlay.style.display = "none";
+  }
+}
+
+function render_home() {
+  console.log("render_home()");
+  setBusy(true);
+  let state: ThermostatState;
+  console.log("getting current thermostat state ...");
+  thermostat.refreshState(function(currentState) {
+    state = currentState;
+    setBusy(false);
 
     let currentTemp: HTMLElement = document.getElementById('temperature-current');
     currentTemp.textContent = currentState.currentTemp;
@@ -217,8 +269,7 @@ function render_settings() {
 }
 
 // Add listeners
-let applySettingsButton : Element = document.getElementById('apply-settings');
-applySettingsButton.addEventListener('click', function() {
+document.getElementById('apply-settings').addEventListener('click', function() {
   let url = (<HTMLInputElement>document.getElementById('url')).value;
   let username = (<HTMLInputElement>document.getElementById('username')).value;
   let password = (<HTMLInputElement>document.getElementById('password')).value;
@@ -235,23 +286,48 @@ applySettingsButton.addEventListener('click', function() {
   (toast as any).MaterialSnackbar.showSnackbar(data);
 });
 
-let targetTemperatureButton : Element = document.getElementById('button-target-temperature');
-targetTemperatureButton.addEventListener('click', function() {
+document.getElementById('button-target-temperature').addEventListener('click', function() {
+  document.getElementById('dialog-target-temperature-new-target').textContent = String(thermostat.state.targetTemp);
   let targetTemperatureDialog : Element = document.getElementById('dialog-target-temperature');
   (<HTMLDialogElement>targetTemperatureDialog).showModal();
 });
 
-let targetDialogOkButton : Element = document.getElementById('dialog-target-temperature-button-ok');
-targetDialogOkButton.addEventListener('click', function() {
+document.getElementById('dialog-target-temperature-button-ok').addEventListener('click', function() {
+  let targetTemperatureElement : Element = document.getElementById('dialog-target-temperature-new-target');
+  let newTarget : number = Number(targetTemperatureElement.textContent);
+  // close the dialog
+  let targetTemperatureDialog : Element = document.getElementById('dialog-target-temperature');
+  (<HTMLDialogElement>targetTemperatureDialog).close();
+  setBusy(true);
+  thermostat.setTargetTemp(newTarget, function(success: boolean) {
+    render_home();
+  });
+
+});
+
+document.getElementById('dialog-target-temperature-button-cancel').addEventListener('click', function() {
   let targetTemperatureDialog : Element = document.getElementById('dialog-target-temperature');
   (<HTMLDialogElement>targetTemperatureDialog).close();
 });
 
-let targetDialogCancelButton : Element = document.getElementById('dialog-target-temperature-button-cancel');
-targetDialogCancelButton.addEventListener('click', function() {
-  let targetTemperatureDialog : Element = document.getElementById('dialog-target-temperature');
-  (<HTMLDialogElement>targetTemperatureDialog).close();
+document.getElementById('dialog-target-temperature-button-up').addEventListener('click', function() {
+  let targetTemperature : Element = document.getElementById('dialog-target-temperature-new-target');
+  let newTarget : number = Number(targetTemperature.textContent);
+  if (newTarget < TARGET_TEMPERATURE_MAX) {
+    newTarget++;
+    targetTemperature.textContent = String(newTarget);
+  }
 });
+
+document.getElementById('dialog-target-temperature-button-down').addEventListener('click', function() {
+  let targetTemperature : Element = document.getElementById('dialog-target-temperature-new-target');
+  let newTarget : number = Number(targetTemperature.textContent);
+  if (newTarget > TARGET_TEMPERATURE_MIN) {
+    newTarget--;
+    targetTemperature.textContent = String(newTarget);
+  }
+});
+
 
 // Route every time the hash part of the URL changes
 window.onhashchange = function() {

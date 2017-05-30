@@ -189,11 +189,27 @@
     <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 
     <dialog class="mdl-dialog" id="dialog-target-temperature">
-      <h2 class="mdl-dialog__title">Target Temperature</h2>
+      <div class="mdl-dialog__title">Set Target</div>
       <div class="mdl-dialog__content">
-        <p>Set the new temperature here.</p>
-        <i class="material-icons">expand_less</i>
-        <i class="material-icons">expand_more</i>
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--6-col mdl-cell--middle mdl-typography--text-center mdl-typography--display-3">
+            <span id="dialog-target-temperature-new-target">--</span>&deg;
+          </div>
+          <div class="mdl-cell mdl-cell--6-col mdl-grid">
+            <div class="mdl-cell mdl-cell--12-col">
+              <button class="mdl-button mdl-js-button mdl-button--icon"
+                      id="dialog-target-temperature-button-up">
+                <i class="material-icons">expand_less</i>
+              </button>
+            </div>
+            <div class="mdl-cell mdl-cell--12-col">
+              <button class="mdl-button mdl-js-button mdl-button--icon"
+                      id="dialog-target-temperature-button-down">
+                <i class="material-icons">expand_more</i>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="mdl-dialog__actions">
         <button type="button" class="mdl-button" id="dialog-target-temperature-button-ok">Ok</button>
