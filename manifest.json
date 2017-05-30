@@ -3,9 +3,14 @@
     "name": "Thermostat control",
     "icons": [
         {
-            "src": "images/thermometer-96.png",
+            "src": "images/thermometer-256.png",
             "type": "image/png",
-            "sizes": "96x96"
+            "sizes": "256x256"
+        },
+        {
+            "src": "images/thermometer-128.png",
+            "type": "image/png",
+            "sizes": "128x128"
         }
     ],
     "start_url": "index.html",

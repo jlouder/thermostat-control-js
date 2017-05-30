@@ -158,6 +158,32 @@ class Thermostat {
     };
     xhr.send(JSON.stringify(request));
   }
+
+  public setHold(newHold: boolean, callback: (boolean) => void) {
+    let request = {};
+    request["hold"] = newHold ? 1 : 0;
+    console.log("setting hold to: " + request["hold"]);
+    let xhr: XMLHttpRequest = new XMLHttpRequest();
+    xhr.open("POST", this.url, true);
+    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(this.username + ':' + this.password));
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          let response = JSON.parse(xhr.responseText);
+          if ("success" in response) {
+            callback(true);
+          } else {
+            callback(false);
+          }
+        } else {
+          console.error("set hold returned " + xhr.status);
+          callback(false);
+        }
+      }
+    };
+    xhr.send(JSON.stringify(request));
+  }
 }
 
 let thermostat: Thermostat = null;
@@ -240,6 +266,14 @@ function render_home() {
 
     let heatingOrCooling: HTMLElement = document.getElementById('state-current');
     heatingOrCooling.textContent = currentState.thermostatStateAsText;
+
+    let timerSchedule: HTMLInputElement = <HTMLInputElement>(document.getElementById('timer-schedule'));
+    let timerHold: HTMLInputElement = <HTMLInputElement>(document.getElementById('timer-hold'));
+    if (state.isHold) {
+      (timerHold.parentNode as any).MaterialRadio.check();
+    } else {
+      (timerSchedule.parentNode as any).MaterialRadio.check();
+    }
   });
 
 }
@@ -302,7 +336,6 @@ document.getElementById('dialog-target-temperature-button-ok').addEventListener(
   thermostat.setTargetTemp(newTarget, function(success: boolean) {
     render_home();
   });
-
 });
 
 document.getElementById('dialog-target-temperature-button-cancel').addEventListener('click', function() {
@@ -327,6 +360,21 @@ document.getElementById('dialog-target-temperature-button-down').addEventListene
     targetTemperature.textContent = String(newTarget);
   }
 });
+
+document.getElementById('timer-schedule').addEventListener('click', function() {
+  setBusy(true);
+  thermostat.setHold(false, function(success: boolean) {
+    render_home();
+  });
+});
+
+document.getElementById('timer-hold').addEventListener('click', function() {
+  setBusy(true);
+  thermostat.setHold(true, function(success: boolean) {
+    render_home();
+  });
+});
+
 
 
 // Route every time the hash part of the URL changes
