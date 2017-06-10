@@ -72,7 +72,8 @@
 
         <div id="home" class="pages" hidden>
           <div class="mdl-grid">
-            <div class="mdl-cell mdl-cell--6-col mdl-cell--4-col-tablet mdl-cell--8-col-phone mdl-cell--middle">
+            <!-- Current temperature and state -->
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--8-col-phone mdl-cell--middle">
               <div class="mdl-typography--text-center">
                 <div class="mdl-typography--display-3">
                   <span id="temperature-current">--.-</span>&deg;
@@ -83,7 +84,8 @@
               </div>
             </div>
 
-            <div class="mdl-cell mdl-cell--6-col mdl-cell--4-col-tablet mdl-cell--8-col-phone">
+            <!-- Target temperature -->
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--8-col-phone">
               <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--12-col mdl-typography--text-center mdl-typography--headline"
                      id="button-target-temperature">
@@ -108,6 +110,17 @@
                     <span class="mdl-radio__label">Hold</span>
                   </label>
                 </div>
+              </div>
+            </div>
+
+            <!-- Mode -->
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--8-col-phone mdl-cell--middle">
+              <div class="mdl-typography--text-center mdl-typography--headline"
+                   id="button-mode">
+                  Mode:
+                  <button class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised mdl-js-ripple-effect">
+                    <span id="mode" class="mdl-typography--headline">--</span>
+                  </button>
               </div>
             </div>
 
@@ -174,5 +187,41 @@
         <button type="button" class="mdl-button" id="dialog-target-temperature-button-cancel">Cancel</button>
       </div>
     </dialog>
+
+    <dialog class="mdl-dialog" id="dialog-mode">
+      <div class="mdl-dialog__title">Set Mode</div>
+      <div class="mdl-dialog__content mdl-grid">
+        <div class="mdl-cell mdl-cell--1-col mdl-cell--1-offset">
+          <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="dialog-mode-option-cool">
+            <input type="radio" id="dialog-mode-option-cool" class="mdl-radio__button"
+                   name="dialog-mode-option" value="cool">
+            <span class="mdl-radio__label">Cool</span>
+          </label>
+
+          <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="dialog-mode-option-heat">
+            <input type="radio" id="dialog-mode-option-heat" class="mdl-radio__button"
+                   name="dialog-mode-option" value="heat">
+            <span class="mdl-radio__label">Heat</span>
+          </label>
+
+          <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="dialog-mode-option-auto">
+            <input type="radio" id="dialog-mode-option-auto" class="mdl-radio__button"
+                   name="dialog-mode-option" value="auto">
+            <span class="mdl-radio__label">Auto</span>
+          </label>
+
+          <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="dialog-mode-option-off">
+            <input type="radio" id="dialog-mode-option-off" class="mdl-radio__button"
+                   name="dialog-mode-option" value="off">
+            <span class="mdl-radio__label">Off</span>
+          </label>
+        </div>
+      </div>
+      <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button" id="dialog-mode-button-ok">Ok</button>
+        <button type="button" class="mdl-button" id="dialog-mode-button-cancel">Cancel</button>
+      </div>
+    </dialog>
+
   </body>
 </html>

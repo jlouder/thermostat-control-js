@@ -72,6 +72,21 @@ class ThermostatState {
     return this._thermostatMode;
   }
 
+  public get thermostatModeAsText() : string {
+    switch (this._thermostatMode) {
+      case ThermostatState.TMODE_AUTO:
+        return "Auto";
+      case ThermostatState.TMODE_COOL:
+        return "Cool";
+      case ThermostatState.TMODE_HEAT:
+        return "Heat";
+      case ThermostatState.TMODE_OFF:
+        return "Off";
+      default:
+        return "Unknown";
+    }
+  }
+
   public get thermostatState() : number {
     return this._thermostatState;
   }
@@ -159,6 +174,32 @@ class Thermostat {
     xhr.send(JSON.stringify(request));
   }
 
+  public setMode(newMode: number, callback: (boolean) => void) {
+    let request = {};
+    request["tmode"] = newMode;
+    console.log("setting mode to: " + newMode);
+    let xhr: XMLHttpRequest = new XMLHttpRequest();
+    xhr.open("POST", this.url, true);
+    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(this.username + ':' + this.password));
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          let response = JSON.parse(xhr.responseText);
+          if ("success" in response) {
+            callback(true);
+          } else {
+            callback(false);
+          }
+        } else {
+          console.error("set mode returned " + xhr.status);
+          callback(false);
+        }
+      }
+    };
+    xhr.send(JSON.stringify(request));
+  }
+
   public setHold(newHold: boolean, callback: (boolean) => void) {
     let request = {};
     request["hold"] = newHold ? 1 : 0;
@@ -205,6 +246,15 @@ function getSettings() {
   return null;
 }
 
+function closeDrawer() {
+  // Close the drawer if it's open
+  let drawer: Element = document.getElementById("drawer");
+  if (drawer.classList.contains("is-visible")) {
+    let d = document.querySelector('.mdl-layout');
+    (d as any).MaterialLayout.toggleDrawer();
+  }  
+}
+
 function routePage() {
   let pageName: string = (window.location.hash) ? window.location.hash : "#home";
   console.log("routePage: we are at: " + pageName);
@@ -214,12 +264,7 @@ function routePage() {
     (pages[i] as HTMLElement).style.display = "none";
     (pages[i] as HTMLElement).removeAttribute("hidden");
   }
-  // Close the drawer if it's open
-  let drawer: Element = document.getElementById("drawer");
-  if (drawer.classList.contains("is-visible")) {
-    let d = document.querySelector('.mdl-layout');
-    (d as any).MaterialLayout.toggleDrawer();
-  }
+  closeDrawer();
   let selectedPage: Element = document.querySelector(pageName);
   (selectedPage as HTMLElement).style.display = "block";
   var routingMap = {
@@ -266,6 +311,9 @@ function render_home() {
 
     let heatingOrCooling: HTMLElement = document.getElementById('state-current');
     heatingOrCooling.textContent = currentState.thermostatStateAsText;
+
+    let mode: HTMLElement = document.getElementById('mode');
+    mode.textContent = currentState.thermostatModeAsText;
 
     let timerSchedule: HTMLInputElement = <HTMLInputElement>(document.getElementById('timer-schedule'));
     let timerHold: HTMLInputElement = <HTMLInputElement>(document.getElementById('timer-hold'));
@@ -326,6 +374,9 @@ document.getElementById('button-target-temperature').addEventListener('click', f
   (<HTMLDialogElement>targetTemperatureDialog).showModal();
 });
 
+//
+// Target temperature dialog
+//
 document.getElementById('dialog-target-temperature-button-ok').addEventListener('click', function() {
   let targetTemperatureElement : Element = document.getElementById('dialog-target-temperature-new-target');
   let newTarget : number = Number(targetTemperatureElement.textContent);
@@ -360,6 +411,77 @@ document.getElementById('dialog-target-temperature-button-down').addEventListene
     targetTemperature.textContent = String(newTarget);
   }
 });
+
+//
+// Mode dialog
+//
+
+document.getElementById('button-mode').addEventListener('click', function() {
+  // Select the current mode inside the dialog, so it's the default
+  let elementName: string;
+  switch (thermostat.state.thermostatMode) {
+    case ThermostatState.TMODE_AUTO:
+      elementName = "dialog-mode-option-auto";
+      break;
+    case ThermostatState.TMODE_COOL:
+      elementName = "dialog-mode-option-cool";
+      break;
+    case ThermostatState.TMODE_HEAT:
+      elementName = "dialog-mode-option-heat";
+      break;
+    default:
+      elementName = "dialog-mode-option-off";
+      break;
+  }
+  let selectedOption: HTMLElement = document.getElementById(elementName);
+  (selectedOption as any).parentNode.MaterialRadio.check();
+  let modeDialog : Element = document.getElementById('dialog-mode');
+  (<HTMLDialogElement>modeDialog).showModal();
+});
+
+
+document.getElementById('dialog-mode-button-cancel').addEventListener('click', function() {
+  let modeDialog : Element = document.getElementById('dialog-mode');
+  (<HTMLDialogElement>modeDialog).close();
+});
+
+document.getElementById('dialog-mode-button-ok').addEventListener('click', function() {
+  let newMode: number;
+  let modeAsText: string = (<HTMLInputElement>document.querySelector("input[name = 'dialog-mode-option']:checked")).value;
+  switch (modeAsText) {
+    case "cool":
+      newMode = ThermostatState.TMODE_COOL;
+      break;
+    case "heat":
+      newMode = ThermostatState.TMODE_HEAT;
+      break;
+    case "auto":
+      newMode = ThermostatState.TMODE_AUTO;
+      break;
+    case "off":
+      newMode = ThermostatState.TMODE_OFF;
+      break;
+  }
+
+  // close the dialog
+  let modeDialog : Element = document.getElementById('dialog-mode');
+  (<HTMLDialogElement>modeDialog).close();
+
+  // set the new mode, but only if it's different from the current mode
+  if (newMode != thermostat.state.thermostatMode) {
+  setBusy(true);
+    thermostat.setMode(newMode, function(success: boolean) {
+      render_home();
+    });
+  } else {
+    console.log("not changing mode because it's already set to: " + newMode);
+  }
+});
+
+
+
+
+
 
 document.getElementById('timer-schedule').addEventListener('click', function() {
   setBusy(true);
